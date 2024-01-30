@@ -34,6 +34,9 @@ export class AuthRoutes {
 
     // login de usuario
     router.post('/login', controller.loginUser );
+
+    // login con Google
+    router.post('/google', controller.loginWithGoogle );
     
     // valida email para cambio de contraseña 
     router.get('/password-recovery', controller.passwordRecovery );

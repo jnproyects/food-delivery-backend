@@ -15,6 +15,8 @@ export abstract class AuthRepository {
     abstract changePassword( email: string, newPassword: string ): Promise<boolean>;
 
     abstract validateEmail( token: string ): Promise<boolean>;
+    
+    abstract loginWithGoogle( token: string ): Promise<Object>;
 
 
 }

@@ -20,7 +20,7 @@ export class AuthRepositoryImpl implements AuthRepository {
     login( loginUserDto: LoginUserDto ): Promise<Object> {
         return this.authDatasource.login( loginUserDto );
     }
-    
+
     passwordRecovery(email: string): Promise<Object> {
         return this.authDatasource.passwordRecovery( email );
     }
@@ -35,6 +35,10 @@ export class AuthRepositoryImpl implements AuthRepository {
 
     validateEmail( token: string ): Promise<boolean> {
         return this.authDatasource.validateEmail( token );
+    }
+
+    loginWithGoogle( token: string): Promise<Object> {
+        return this.authDatasource.loginWithGoogle( token );
     }
 
 }

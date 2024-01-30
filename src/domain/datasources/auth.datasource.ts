@@ -16,4 +16,6 @@ export abstract class AuthDatasource {
 
     abstract validateEmail( token: string ): Promise<boolean>;
 
+    abstract loginWithGoogle( token: string ): Promise<Object>;
+
 }

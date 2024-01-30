@@ -1,4 +1,4 @@
-import { JwtAdapter, bcryptAdapter, envs } from "../../../config";
+import { JwtAdapter, bcryptAdapter, envs, validateGoogleIdToken } from "../../../config";
 import { generateRandomCode } from "../../../config/helpers/generate-random-code.helper";
 import { UserModel } from "../../../data";
 import { AuthDatasource, CustomError, LoginUserDto, RegisterUserDto, UserEntity } from "../../../domain";
@@ -10,6 +10,7 @@ export class MongoDbAuthDatasource implements AuthDatasource {
     constructor(
         private readonly emailService: EmailService,
     ) {}
+    
     
     async register( registerUserDto: RegisterUserDto ): Promise<Object> {
         
@@ -214,6 +215,74 @@ export class MongoDbAuthDatasource implements AuthDatasource {
         await user.save();
 
         return true;
+
+    }
+
+    async loginWithGoogle( token: string ): Promise<Object> {
+        
+        const googleUser = await validateGoogleIdToken( token );
+        if ( !googleUser ) throw CustomError.unauthorized('Error validating with google');
+        // console.log( { googleUser: googleUser } );
+
+        const user = await UserModel.findOne({ email: googleUser.email });
+
+        if ( !user ) {
+
+            // si no existe un user con ese email registramos al user en DB
+            try {
+
+                const user = new UserModel({ 
+                    name: googleUser.name, 
+                    email: googleUser.email, 
+                    emailValidated: true,
+                    img: googleUser.picture,
+                });
+    
+                // Encriptar la contraseña
+                // googleUser['aud'] ??? //todo
+                user.password = bcryptAdapter.hash( 'Testing123456' );
+    
+                await user.save();
+    
+                const { password, ...userEntity } = UserEntity.fromObject( user );
+                
+                // Generar JWT
+                const token = await JwtAdapter.generateToken({ id: user.id });
+                if ( !token ) throw CustomError.internalServer('Error while creating JWT');
+                
+                return { 
+                    user: userEntity,
+                    token: token
+                };
+    
+    
+            } catch (error) {
+                throw CustomError.internalServer(`${ error }`);
+            }
+        }
+        
+        
+        // si existe un user en DB solo hacemos login normalmente
+        //googleUser['aud']
+        let isMatch = bcryptAdapter.compare( 'Testing123456', user.password );
+        if ( !(isMatch === true) ) throw CustomError.badRequest('Invalid credentials');
+
+        try {
+
+            const { password, ...userEntity } = UserEntity.fromObject( user );
+            
+            // Generamos un nuevo JWT para el usuario logueado
+            const token = await JwtAdapter.generateToken({ id: user.id });
+            if ( !token ) throw CustomError.internalServer('Error while creating JWT');
+
+            return {
+                user: userEntity,
+                token: token
+            }
+
+        } catch (error) {
+            throw CustomError.internalServer(`${ error }`);
+        }
 
     }
 

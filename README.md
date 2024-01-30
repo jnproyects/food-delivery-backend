@@ -1,4 +1,4 @@
-# Ecommerce Backend App
+# Food Delivery Backend App
 
 Servidor REST construido con Node + Express + TypeScript el cual será el Backend para Food Delivery App de Flutter.
 

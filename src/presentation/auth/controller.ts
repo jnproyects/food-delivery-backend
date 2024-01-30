@@ -52,8 +52,18 @@ export class AuthController {
         if ( error ) return res.status( 400 ).json( { error } );
 
         this.authRepository.login( loginuserDto! )
-            .then( ( user ) => res.json( user )) // lo que recibimos en app Flutter
+            .then( ( user ) => res.json( user )) // lo que recibirá en app Flutter
             .catch( (error) => this.handleError( error, res ) );
+    }
+
+    loginWithGoogle = ( req: Request, res: Response ) => {
+        
+        const { token } = req.body;
+        if ( !token ) return res.status( 400 ).json({ error: 'Missing token' });
+
+        this.authRepository.loginWithGoogle( token )
+            .then( (user) => res.json( user ) )
+            .catch( (err) => this.handleError( err, res) );
     }
 
     passwordRecovery = ( req: Request, res: Response ) => {
