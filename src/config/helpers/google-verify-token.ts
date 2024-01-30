@@ -21,15 +21,16 @@ export const validateGoogleIdToken =  async ( token: string ) => {
         const payload = ticket.getPayload();
         if ( !payload ) throw CustomError.internalServer('Error validating token'); 
 
-        // if ( payload['aud'] === CLIENT_ID || payload['aud'] === ANDROID_CLIENT_ID )
-
-        console.log('========PAYLOAD========');
-        console.log( payload );
+        if ( payload['aud'] !== CLIENT_ID ) throw CustomError.unauthorized('Error authenticating user');
+        
+        // console.log('========PAYLOAD========');
+        // console.log( payload );
 
         return {
             name: payload['name'],
             picture: payload['picture'],
             email: payload['email'],
+            aud: payload['aud'],
         }
 
 

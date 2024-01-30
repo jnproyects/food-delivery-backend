@@ -238,15 +238,12 @@ export class MongoDbAuthDatasource implements AuthDatasource {
                     img: googleUser.picture,
                 });
     
-                // Encriptar la contraseña
-                // googleUser['aud'] ??? //todo
-                user.password = bcryptAdapter.hash( 'Testing123456' );
+                user.password = bcryptAdapter.hash( googleUser.aud );
     
                 await user.save();
     
                 const { password, ...userEntity } = UserEntity.fromObject( user );
                 
-                // Generar JWT
                 const token = await JwtAdapter.generateToken({ id: user.id });
                 if ( !token ) throw CustomError.internalServer('Error while creating JWT');
                 
@@ -263,15 +260,13 @@ export class MongoDbAuthDatasource implements AuthDatasource {
         
         
         // si existe un user en DB solo hacemos login normalmente
-        //googleUser['aud']
-        let isMatch = bcryptAdapter.compare( 'Testing123456', user.password );
+        let isMatch = bcryptAdapter.compare( googleUser.aud, user.password );
         if ( !(isMatch === true) ) throw CustomError.badRequest('Invalid credentials');
 
         try {
 
             const { password, ...userEntity } = UserEntity.fromObject( user );
             
-            // Generamos un nuevo JWT para el usuario logueado
             const token = await JwtAdapter.generateToken({ id: user.id });
             if ( !token ) throw CustomError.internalServer('Error while creating JWT');
 
